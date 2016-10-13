@@ -14,15 +14,21 @@ int main()
 	rootNode = RbTreeAdd(rootNode, 8, "8");
 	rootNode = RbTreeAdd(rootNode, 9, "9");
 
+	rootNode = RbTreeDelete(rootNode, 8);
 	RbTreePrint(rootNode, 1);
-	printf("\n\n");
+	printf("\n\n\n");
 
-	struct RbNode *x = RbTreeLookup(rootNode, 5);
-	struct RbNode *y = RbTreeLookup(rootNode, 12);
-	RbTreeTransplant(rootNode, x, y);
+	struct RbNode *min = RbTreeMin(rootNode);
+	printf("Min: %d\n", min->key);
 
-	RbTreePrint(rootNode, 1);
-	RbTreeFree(rootNode);
+	struct RbNode *max = RbTreeMax(rootNode);
+	printf("Max: %d\n\n", max->key);
+
+	struct RbNode *finded = RbTreeLookup(rootNode, 11);
+	printf("Finded 11: %d\n", finded->key);
+
+	finded = RbTreeLookup(rootNode, 25);
+	printf("Finded 25: %d\n", finded == NULL ? -1 : finded->key);
 
 	_getch();
 	return 0;

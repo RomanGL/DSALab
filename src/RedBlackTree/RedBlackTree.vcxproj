@@ -113,7 +113,6 @@
     <ClInclude Include="RBTree.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="D:\Desktop\Source.cpp" />
     <ClCompile Include="RbTree.c" />
     <ClCompile Include="Main.c" />
   </ItemGroup>

@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 struct RbNode *RbTreeFixUp_Add(struct RbNode *root, struct RbNode *node);
-//struct RbNode *RbTreeFixUp_Delete(struct RbNode *root, struct RbNode *node);
+struct RbNode *RbTreeFixUp_Delete(struct RbNode *root, struct RbNode *node);
 
 struct RbNode *RbTreeRotateLeft(struct RbNode *root, struct RbNode *node);
 struct RbNode *RbTreeRotateRight(struct RbNode *root, struct RbNode *node);
@@ -117,7 +117,48 @@ struct RbNode *RbTreeAdd(struct RbNode *root, int key, char *value)
 
 struct RbNode *RbTreeDelete(struct RbNode *root, int key)
 {
-	return NULL;
+	struct RbNode *x;
+	struct RbNode *y;
+	struct RbNode *z = RbTreeLookup(root, key);
+
+	if (!z || z == EmptyNodePtr) 
+		return root;
+
+	if (z->left == EmptyNodePtr || z->right == EmptyNodePtr) 
+	{
+		//у удаляемого элемента нет дочерных узлов
+		y = z;
+	}
+	else 
+	{
+		y = z->right;
+		while (y->left != EmptyNodePtr) 
+			y = y->left;
+	}
+
+	// у удаляемого узла только один ребенок
+	if (y->left != EmptyNodePtr)
+		x = y->left;
+	else
+		x = y->right;
+
+	x->parent = y->parent;
+	if (y->parent)
+		if (y == y->parent->left)
+			y->parent->left = x;
+		else
+			y->parent->right = x;
+	else
+		root = x;
+
+	if (y != z) 
+		z->key = y->key;
+
+	if (y->color == Black)
+		RbTreeFixUp_Delete(root, x);
+
+	RbTreeFree(y);
+	return root;
 }
 
 struct RbNode *RbTreeFixUp_Add(struct RbNode *root, struct RbNode *node)
@@ -196,6 +237,175 @@ struct RbNode *RbTreeFixUp_Add(struct RbNode *root, struct RbNode *node)
 	return root;
 }
 
+struct RbNode *RbTreeFixUp_Delete(struct RbNode *root, struct RbNode *x)
+{
+	struct RbNode *w;
+
+	while (x != root && x->color == Black && x->parent != EmptyNodePtr) {
+		if (x == x->parent->left) 
+		{
+			w = x->parent->right;
+			if (w != EmptyNodePtr) 
+			{
+				if (w->color == Red) 
+				{
+					w->color = Black;
+					if (x->parent != EmptyNodePtr)
+						x->parent->color = Red;
+
+					RbTreeRotateLeft(root, x->parent);
+
+					if (x->parent != EmptyNodePtr)
+						w = x->parent->right;
+					else 
+						w = EmptyNodePtr;
+				}
+				if (w != EmptyNodePtr) 
+				{
+					if (w->left == EmptyNodePtr && w->right == EmptyNodePtr) 
+					{
+						w->color = Red;
+						x = x->parent;
+					}
+					else if (w->left->color == Black && w->right->color == Black) 
+					{
+						w->color = Red;
+						x = x->parent;
+					}
+					else 
+					{
+						if (w->right == EmptyNodePtr) 
+						{
+							if (w->left != EmptyNodePtr) 
+								w->left->color = Black;
+							w->color = Red;
+							RbTreeRotateRight(root, w);
+
+							if (x->parent != EmptyNodePtr) 
+								w = x->parent->right;
+							else 
+								w = EmptyNodePtr;
+						}
+						else if (w->right->color == Black) 
+						{
+							if (w->left != EmptyNodePtr) 
+								w->left->color = Black;
+
+							w->color = Red;
+							RbTreeRotateRight(root, w);
+
+							if (x->parent != EmptyNodePtr) 
+								w = x->parent->right;
+							else 
+								w = EmptyNodePtr;
+						}
+						if (w != EmptyNodePtr) 
+						{
+							if (x->parent != EmptyNodePtr)
+								w->color = x->parent->color;
+							else 
+								w->color = Black;
+							
+							if (x->parent != EmptyNodePtr) 
+								x->parent->color = Black;
+							if (w->right != EmptyNodePtr) 
+								w->right->color = Black;
+							else 
+								w = EmptyNodePtr;
+						}
+
+						RbTreeRotateLeft(root, x->parent);
+						x = root;
+					}
+				}
+			}
+		}
+		else if (x == x->parent->right) 
+		{
+			w = x->parent->left;
+			if (w != EmptyNodePtr) 
+			{
+				if (w->color == Red) 
+				{
+					w->color = Black;
+					if (x->parent != EmptyNodePtr) 
+						x->parent->color = Red;
+
+					RbTreeRotateLeft(root, x->parent);
+
+					if (x->parent != EmptyNodePtr) 
+						w = x->parent->left;
+					else 
+						w = EmptyNodePtr;
+				}
+				if (w != EmptyNodePtr) 
+				{
+					if (w->left == EmptyNodePtr && w->right == EmptyNodePtr) 
+					{
+						w->color = Red;
+						x = x->parent;
+					}
+					else if (w->left->color == Black && w->right->color == Black) 
+					{
+						w->color = Red;
+						x = x->parent;
+					}
+					else 
+					{
+						if (w->left == EmptyNodePtr) 
+						{
+							if (w->right != EmptyNodePtr) 
+								w->right->color = Black;
+
+							w->color = Red;
+							RbTreeRotateLeft(root, w);
+
+							if (x->parent != EmptyNodePtr) 
+								w = x->parent->left;
+							else 
+								w = EmptyNodePtr;
+						}
+						else if (w->left->color == Black) 
+						{
+							if (w->right != EmptyNodePtr) 
+								w->right->color = Black;
+
+							w->color = Red;
+							RbTreeRotateLeft(root, w);
+
+							if (x->parent != EmptyNodePtr) 
+								w = x->parent->left;
+							else 
+								w = EmptyNodePtr;
+						}
+						if (w != EmptyNodePtr) 
+						{
+							if (x->parent != EmptyNodePtr) 
+								w->color = x->parent->color;
+							else 
+								w->color = Black;
+
+							if (x->parent != EmptyNodePtr) 
+								x->parent->color = Black;
+							if (w->left != EmptyNodePtr) 
+								w->left->color = Black;
+							else 
+								w = EmptyNodePtr;
+						}
+
+						RbTreeRotateRight(root, x->parent);
+						x = root;
+					}
+				}
+			}
+		}
+	}
+
+	if (x != EmptyNodePtr) 
+		x->color = Black;
+	return root;
+}
+
 struct RbNode *RbTreeRotateLeft(struct RbNode *root, struct RbNode *node)
 {
 	struct RbNode *right = node->right;
@@ -254,8 +464,6 @@ struct RbNode *RbTreeRotateRight(struct RbNode *root, struct RbNode *node)
 
 void RbTreeTransplant(struct RbNode *root, struct RbNode *first, struct RbNode *second)
 {
-	struct RbNode *temp = EmptyNodePtr;
-
 	if (first->parent == EmptyNodePtr)
 		root = second;
 	else if (first == first->parent->left)
@@ -263,26 +471,5 @@ void RbTreeTransplant(struct RbNode *root, struct RbNode *first, struct RbNode *
 	else
 		first->parent->right = second;
 
-	if (second->parent == EmptyNodePtr)
-		root = first;
-	else if (second == second->parent->left)
-		second->parent->left = first;
-	else
-		second->parent->right = first;
-
-	temp->parent = first->parent;
-	first->parent = second->parent;
-	second->parent = temp->parent;
-
-	first->left->parent = second->left->parent;
-	first->right->parent = second->right->parent;
-	second->left->parent = first->left->parent;
-	second->right->parent = first->right->parent;
-
-	temp->left = first->left;
-	temp->right = first->right;
-	first->left = second->left;
-	first->right = second->right;
-	second->left = temp->left;
-	second->right = temp->right;
+	second->parent = first->parent;
 }
